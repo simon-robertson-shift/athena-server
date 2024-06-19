@@ -14,12 +14,7 @@ var databaseInstance *sql.DB
 func Connect(development bool) (err error) {
 	if development {
 		databaseInstance, err = sql.Open("libsql", env.GetDatabaseFilePath())
-
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	}
 
 	tursoFilePath := env.GetTursoFilePath()
@@ -117,6 +112,7 @@ func (o *RowScanner[T]) Every(callback RowCallback[T]) []*T {
 
 func (o *RowScanner[T]) First(callback RowCallback[T]) *T {
 	var row T
+	var ref *T = nil
 
 	for o.rows.Next() {
 		callback(&row, func(fields ...any) {
@@ -127,12 +123,13 @@ func (o *RowScanner[T]) First(callback RowCallback[T]) *T {
 			}
 		})
 
+		ref = &row
 		break
 	}
 
 	o.rows.Close()
 
-	return &row
+	return ref
 }
 
 func Rows[T any](statement string, args ...any) *RowScanner[T] {

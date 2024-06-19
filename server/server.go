@@ -49,7 +49,7 @@ func handleConnectionRequests(connection *clients.Connection) {
 			continue
 		}
 
-		request, err := actions.CreateRequest(connection, bytes)
+		request, err := actions.CreateClientMessage(connection, bytes)
 
 		if err != nil {
 			continue

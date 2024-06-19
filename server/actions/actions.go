@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 )
 
-type Action func(request *Request) *Response
+type Action func(message *ClientMessage) *ServerMessage
 
-type Request struct {
+type ClientMessage struct {
 	Id     int             `json:"id"`
 	Type   int             `json:"type"`
 	Data   json.RawMessage `json:"data"`
@@ -15,100 +15,114 @@ type Request struct {
 	Client *clients.Connection
 }
 
-type Response struct {
+type ServerMessage struct {
 	Id   int             `json:"id"`
 	Type int             `json:"type"`
 	Data json.RawMessage `json:"data"`
 }
 
 const (
-	RequestType_Ping = 1
-
-	RequestType_Login  = 10
-	RequestType_Logout = 11
+	RoleValue_Observer      = 1
+	RoleValue_Producer      = 2
+	RoleValue_Manager       = 3
+	RoleValue_Owner         = 4
+	RoleValue_Administrator = 5
 )
 
 const (
-	ResponseType_AccountNotification = 0
+	MessageType_Ping = 1
+	MessageType_Pong = 2
 
-	ResponseType_Pong    = 1
-	ResponseType_Success = 2
+	MessageType_Login       = 10
+	MessageType_Logout      = 11
+	MessageType_ResumeLogin = 12
 
-	ResponseType_NotAcceptable    = 10
-	ResponseType_NotAuthenticated = 11
-	ResponseType_NotAuthorized    = 12
-	ResponseType_NotAvailable     = 13
+	MessageType_Success          = 200
+	MessageType_NotAcceptable    = 210
+	MessageType_NotAuthenticated = 211
+	MessageType_NotAuthorized    = 212
+	MessageType_NotAvailable     = 213
 )
 
-var requestActions = map[int]Action{
-	// RequestType_Login: Login,
+var clientActions = map[int]Action{
+	MessageType_Login:       Login,
+	MessageType_Logout:      Logout,
+	MessageType_ResumeLogin: ResumeLogin,
 }
 
-func CreateRequest(client *clients.Connection, bytes []byte) (request *Request, err error) {
-	request = &Request{}
-	err = json.Unmarshal(bytes, request)
+func CreateClientMessage(client *clients.Connection, bytes []byte) (message *ClientMessage, err error) {
+	message = &ClientMessage{}
+	err = json.Unmarshal(bytes, message)
 
 	if err == nil {
-		request.Client = client
+		message.Client = client
 	}
 
 	return
 }
 
-func CreateResponse(request *Request, responseType int, responseData interface{}) *Response {
-	response := &Response{
-		Id:   request.Id,
-		Type: responseType,
+func CreateServerMessage(clientMessage *ClientMessage, messageType int, messageData any) *ServerMessage {
+	message := &ServerMessage{
+		Id:   clientMessage.Id,
+		Type: messageType,
 	}
 
-	if responseData != nil {
-		bytes, _ := json.Marshal(responseData)
-		response.Data = bytes
+	if messageData != nil {
+		bytes, _ := json.Marshal(messageData)
+		message.Data = bytes
 	}
 
-	return response
+	return message
 }
 
-func CreateResponseForAccount(request *Request, responseType int, responseData interface{}) *Response {
-	response := CreateResponse(request, responseType, responseData)
+func CreateServerMessageForAccount(clientMessage *ClientMessage, messageType int, messageData any) *ServerMessage {
+	response := CreateServerMessage(clientMessage, messageType, messageData)
 	response.Id = 0
 	return response
 }
 
-func Execute(request *Request) *Response {
-	if request.Type == RequestType_Ping {
-		return CreateResponse(request, ResponseType_Pong, nil)
+func Execute(message *ClientMessage) *ServerMessage {
+	if message.Type == MessageType_Ping {
+		return CreateServerMessage(message, MessageType_Pong, nil)
 	}
 
-	action, found := requestActions[request.Type]
+	action, found := clientActions[message.Type]
 
 	if !found {
-		return notAcceptable(request)
+		return notAcceptable(message)
 	}
 
-	return action(request)
+	return action(message)
 }
 
-func decodeRequestData(request *Request, data interface{}) bool {
-	if request.Data != nil {
-		return json.Unmarshal(request.Data, data) == nil
+func decodeMessageData(message *ClientMessage, destination any) bool {
+	if message.Data != nil {
+		return json.Unmarshal(message.Data, destination) == nil
 	}
 
 	return false
 }
 
-func notAcceptable(request *Request) *Response {
-	return CreateResponse(request, ResponseType_NotAcceptable, nil)
+func isAuthorized(message *ClientMessage, roleValue int64) bool {
+	return message.Client.UserRole >= roleValue
 }
 
-func notAuthenticated(request *Request) *Response {
-	return CreateResponse(request, ResponseType_NotAuthenticated, nil)
+func success(message *ClientMessage, data any) *ServerMessage {
+	return CreateServerMessage(message, MessageType_Success, data)
 }
 
-func notAuthorized(request *Request) *Response {
-	return CreateResponse(request, ResponseType_NotAuthorized, nil)
+func notAcceptable(message *ClientMessage) *ServerMessage {
+	return CreateServerMessage(message, MessageType_NotAcceptable, nil)
 }
 
-func notAvailable(request *Request) *Response {
-	return CreateResponse(request, ResponseType_NotAvailable, nil)
+func notAuthenticated(message *ClientMessage) *ServerMessage {
+	return CreateServerMessage(message, MessageType_NotAuthenticated, nil)
+}
+
+func notAuthorized(message *ClientMessage) *ServerMessage {
+	return CreateServerMessage(message, MessageType_NotAuthorized, nil)
+}
+
+func notAvailable(message *ClientMessage) *ServerMessage {
+	return CreateServerMessage(message, MessageType_NotAvailable, nil)
 }

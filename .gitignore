@@ -7,3 +7,4 @@
 /sql/*.db
 /sql/*.db-*
 /sql/database.version
+/test.*
