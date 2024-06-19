@@ -1,0 +1,9 @@
+.DS_Store
+.env.development
+.env.production
+
+/athena
+/athena.*
+/sql/*.db
+/sql/*.db-*
+/sql/database.version
