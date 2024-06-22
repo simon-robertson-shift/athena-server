@@ -20,9 +20,9 @@ func main() {
 	}
 
 	if development {
-		log.Println("[running in development mode]")
+		log.Println("DEVELOPMENT")
 	} else {
-		log.Println("[running in production mode]")
+		log.Println("PRODUCTION")
 	}
 
 	log.Println("Loading the environment ...")
@@ -49,6 +49,6 @@ func main() {
 	log.Println("Loading constant store data ...")
 	// constants.Load()
 
-	log.Println("Starting the server ...")
+	log.Println("Running")
 	server.Start()
 }
