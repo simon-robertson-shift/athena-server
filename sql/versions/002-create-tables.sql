@@ -325,7 +325,7 @@ CREATE TABLE tasks_changes (
 
 CREATE INDEX tasks_changes_account_id ON tasks_changes (account_id);
 CREATE INDEX tasks_changes_task_id ON tasks_changes (task_id);
-CREATE INDEX tasks_created_by ON tasks_changes (created_by);
+CREATE INDEX tasks_changes_created_by ON tasks_changes (created_by);
 
 CREATE TABLE tasks_comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
