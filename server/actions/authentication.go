@@ -40,6 +40,7 @@ func Login(message *ClientMessage) *ServerMessage {
 	user = store.GetUserById(user.Id)
 
 	message.Client.AccountId = user.AccountId
+	message.Client.TeamId = user.TeamId
 	message.Client.UserId = user.Id
 	message.Client.UserRole = user.RoleValue
 
@@ -62,6 +63,7 @@ func Logout(message *ClientMessage) *ServerMessage {
 	store.SetUserSessionToken(user.Id, "")
 
 	message.Client.AccountId = 0
+	message.Client.TeamId = 0
 	message.Client.UserId = 0
 	message.Client.UserRole = 0
 

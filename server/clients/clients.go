@@ -9,6 +9,7 @@ import (
 
 type Connection struct {
 	AccountId int64
+	TeamId    int64
 	UserId    int64
 	UserRole  int64
 	Socket    *websocket.Conn
@@ -83,7 +84,7 @@ func Disconnect(connection *Connection) {
 }
 
 // Sends a message to a specific client.
-func SendMessage(message interface{}, client *Connection) {
+func SendMessage(message any, client *Connection) {
 	bytes, _ := json.Marshal(message)
 
 	if err := client.Socket.WriteMessage(websocket.TextMessage, bytes); err != nil {
@@ -92,7 +93,7 @@ func SendMessage(message interface{}, client *Connection) {
 }
 
 // Sends a message to all clients within a specific account.
-func SendMessageToAccountClients(message interface{}, client *Connection) {
+func SendMessageToAccountClients(message any, client *Connection) {
 	bytes, _ := json.Marshal(message)
 
 	connectionListMutex.Lock()
@@ -114,7 +115,7 @@ func SendMessageToAccountClients(message interface{}, client *Connection) {
 }
 
 // Sends a message to all clients connected to the server.
-func SendMessageToClients(message interface{}) {
+func SendMessageToClients(message any) {
 	bytes, _ := json.Marshal(message)
 
 	connectionListMutex.Lock()
