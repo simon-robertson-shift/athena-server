@@ -4,14 +4,33 @@ CREATE TABLE accounts (
     company_country_code NOT NULL,
     company_country_name NOT NULL,
     price_plan_id INTEGER NOT NULL,
-    current_file_storage_size INTEGER NOT NULL,
-    current_user_count INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     expires_at INTEGER NOT NULL DEFAULT (0),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
 CREATE INDEX accounts_expires_at ON accounts (expires_at);
+
+CREATE TABLE accounts_absences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    date INTEGER NOT NULL,
+    duration INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX accounts_absences_account_id ON accounts_absences (account_id);
+CREATE INDEX accounts_absences_date ON accounts_absences (date);
+
+CREATE TABLE accounts_introductions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX accounts_introductions_account_id ON accounts_introductions (account_id);
 
 CREATE TABLE accounts_invoices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +55,15 @@ CREATE TABLE accounts_settings (
 
 CREATE INDEX accounts_settings_account_id ON accounts_settings (account_id);
 
+CREATE TABLE accounts_usage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX accounts_usage_account_id ON accounts_usage (account_id);
+
 CREATE TABLE capabilities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
@@ -47,7 +75,7 @@ CREATE TABLE capabilities (
 
 CREATE INDEX capabilities_account_id ON capabilities (account_id);
 
-CREATE TABLE durations (
+CREATE TABLE enum_durations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     value INTEGER NOT NULL,
@@ -55,7 +83,39 @@ CREATE TABLE durations (
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
-CREATE INDEX durations_value ON durations (value);
+CREATE INDEX enum_durations_value ON enum_durations (value);
+
+CREATE TABLE enum_priorities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX enum_priorities_value ON enum_priorities (value);
+
+CREATE TABLE enum_roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX enum_roles_value ON enum_roles (value);
+
+CREATE TABLE enum_statuses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX enum_statuses_value ON enum_statuses (value);
 
 CREATE TABLE features (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,7 +123,7 @@ CREATE TABLE features (
     product_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    description_vector FLOAT32(256) NOT NULL,
+    description_html TEXT NOT NULL,
     priority_name TEXT NOT NULL,
     priority_value INTEGER NOT NULL,
     created_by INTEGER NOT NULL,
@@ -94,7 +154,7 @@ CREATE TABLE features_comments (
     account_id INTEGER NOT NULL,
     feature_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    content_vector FLOAT32(256) NOT NULL,
+    content_html TEXT NOT NULL,
     created_by INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -130,6 +190,45 @@ CREATE TABLE files (
 CREATE INDEX files_account_id ON files (account_id);
 CREATE INDEX files_created_by ON files (created_by);
 
+CREATE TABLE intelligence_assistants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE TABLE intelligence_batches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE TABLE intelligence_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX intelligence_files_account_id ON intelligence_files (account_id);
+
+CREATE TABLE intelligence_vector_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX intelligence_vector_files_account_id ON intelligence_vector_files (account_id);
+
+CREATE TABLE intelligence_vector_stores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX intelligence_vector_stores_account_id ON intelligence_vector_stores (account_id);
+
 CREATE TABLE invitations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
@@ -153,7 +252,7 @@ CREATE TABLE milestones (
     account_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    description_vector FLOAT32(256) NOT NULL,
+    description_html TEXT NOT NULL,
     duration INTEGER NOT NULL,
     ends_on INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
@@ -168,7 +267,7 @@ CREATE TABLE milestones_reports (
     account_id INTEGER NOT NULL,
     milestone_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    content_vector FLOAT32(256) NOT NULL,
+    content_html TEXT NOT NULL,
     duration_accuracy INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     expires_at INTEGER NOT NULL DEFAULT (strftime('%s', datetime('now', '+1 year'))),
@@ -185,22 +284,12 @@ CREATE TABLE price_plans (
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
-CREATE TABLE priorities (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    value INTEGER NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
-);
-
-CREATE INDEX priorities_value ON priorities (value);
-
 CREATE TABLE products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    description_vector FLOAT32(256) NOT NULL,
+    description_html TEXT NOT NULL,
     created_by INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -227,7 +316,7 @@ CREATE TABLE products_notes (
     account_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    content_vector FLOAT32(256),
+    content_html TEXT NOT NULL,
     created_by INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -252,31 +341,13 @@ CREATE TABLE registrations (
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
-CREATE TABLE roles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    value INTEGER NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
-);
-
-CREATE TABLE statuses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    value INTEGER NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
-);
-
 CREATE TABLE tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     feature_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    description_vector FLOAT32(256) NOT NULL,
+    description_html TEXT NOT NULL,
     priority_name TEXT NOT NULL,
     priority_value INTEGER NOT NULL,
     status_name TEXT NOT NULL,
@@ -317,7 +388,6 @@ CREATE TABLE tasks_changes (
     account_id INTEGER NOT NULL,
     task_id INTEGER NOT NULL,
     reason TEXT NOT NULL,
-    reason_vector FLOAT32(256) NOT NULL,
     created_by INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -332,7 +402,7 @@ CREATE TABLE tasks_comments (
     account_id INTEGER NOT NULL,
     task_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    content_vector FLOAT32(256) NOT NULL,
+    content_html TEXT NOT NULL,
     created_by INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -358,7 +428,7 @@ CREATE TABLE tasks_reports (
     account_id INTEGER NOT NULL,
     task_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    content_vector FLOAT32(256) NOT NULL,
+    content_html TEXT NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     expires_at INTEGER NOT NULL DEFAULT (strftime('%s', datetime('now', '+1 year'))),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -402,27 +472,29 @@ CREATE INDEX users_team_id ON users (team_id);
 CREATE INDEX users_contact_email ON users (contact_email);
 CREATE INDEX users_session_token ON users (session_token);
 
+CREATE TABLE users_absences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    date INTEGER NOT NULL,
+    duration INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+);
+
+CREATE INDEX users_absences_user_id ON users_absences (user_id);
+CREATE INDEX users_absences_date ON users_absences (date);
+
 CREATE TABLE users_availability (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    duration_monday INTEGER NOT NULL,
-    duration_tuesday INTEGER NOT NULL,
-    duration_wednesday INTEGER NOT NULL,
-    duration_thursday INTEGER NOT NULL,
-    duration_friday INTEGER NOT NULL,
-    is_available INTEGER NOT NULL,
-    week_starting_on INTEGER NOT NULL,
-    week_ending_on INTEGER NOT NULL,
+    day INTEGER NOT NULL,
+    duration INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-    expires_at INTEGER NOT NULL DEFAULT (strftime('%s', datetime('now', '+4 weeks'))),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
 CREATE INDEX users_availability_user_id ON users_availability (user_id);
-CREATE INDEX users_availability_is_available ON users_availability (is_available);
-CREATE INDEX users_availability_week_starting_on ON users_availability (week_starting_on);
-CREATE INDEX users_availability_week_ending_on ON users_availability (week_ending_on);
-CREATE INDEX users_availability_expires_at ON users_availability (expires_at);
+CREATE INDEX users_availability_day ON users_availability (day);
 
 CREATE TABLE users_capabilities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -440,7 +512,6 @@ CREATE TABLE users_reports (
     account_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    content_vector FLOAT32(256) NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     expires_at INTEGER NOT NULL DEFAULT (strftime('%s', datetime('now', '+1 year'))),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))

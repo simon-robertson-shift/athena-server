@@ -1,6 +1,6 @@
 package store
 
-type Role struct {
+type EnumRole struct {
 	Id          int64
 	Name        string
 	Description string

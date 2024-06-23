@@ -1,6 +1,6 @@
 package store
 
-type Status struct {
+type EnumStatus struct {
 	Id          int64
 	Name        string
 	Description string

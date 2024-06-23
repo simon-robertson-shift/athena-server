@@ -1,6 +1,6 @@
 package store
 
-type Priority struct {
+type EnumPriority struct {
 	Id        int64
 	Name      string
 	Value     int64

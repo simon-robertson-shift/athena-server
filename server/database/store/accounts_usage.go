@@ -1,9 +1,8 @@
 package store
 
-type Duration struct {
+type AccountUsage struct {
 	Id        int64
-	Name      string
-	Value     int64
+	AccountId int64
 	CreatedAt int64
 	UpdatedAt int64
 }

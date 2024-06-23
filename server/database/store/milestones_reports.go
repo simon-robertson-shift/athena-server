@@ -5,7 +5,7 @@ type MilestoneReport struct {
 	AccountId         int64
 	MilestoneId       int64
 	Content           string
-	ContentVector     []float32
+	ContentHTML       string
 	DurationAccurancy int64
 	CreatedAt         int64
 	ExpiresAt         int64
