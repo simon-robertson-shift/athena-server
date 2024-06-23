@@ -1,11 +1,10 @@
 package store
 
-type AccountUsage struct {
+type AccountAbsence struct {
 	Id        int64
 	AccountId int64
-	FileBytes int64
-	FileCount int64
-	UserCount int64
+	Date      int64
+	Duration  int64
 	CreatedAt int64
 	UpdatedAt int64
 }

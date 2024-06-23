@@ -58,6 +58,9 @@ CREATE INDEX accounts_settings_account_id ON accounts_settings (account_id);
 CREATE TABLE accounts_usage (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
+    file_bytes INTEGER NOT NULL,
+    file_count INTEGER NOT NULL,
+    user_count INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
@@ -78,6 +81,7 @@ CREATE INDEX capabilities_account_id ON capabilities (account_id);
 CREATE TABLE enum_durations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    description TEXT NOT NULL,
     value INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -88,6 +92,7 @@ CREATE INDEX enum_durations_value ON enum_durations (value);
 CREATE TABLE enum_priorities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    description TEXT NOT NULL,
     value INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
@@ -198,18 +203,39 @@ CREATE TABLE intelligence_assistants (
 
 CREATE TABLE intelligence_batches (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    remote_id NOT NULL,
+    type INTEGER NOT NULL,
+    token TEXT NOT NULL,
+    status TEXT NOT NULL,
+    input_file_id TEXT NOT NULL,
+    output_file_id TEXT NOT NULL,
+    milestone_id INTEGER NOT NULL,
+    task_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
+CREATE INDEX intelligence_batches_account_id ON intelligence_batches (account_id);
+CREATE INDEX intelligence_batches_remote_id ON intelligence_batches (remote_id);
+CREATE INDEX intelligence_batches_type ON intelligence_batches (type);
+CREATE INDEX intelligence_batches_token ON intelligence_batches (token);
+CREATE INDEX intelligence_batches_status ON intelligence_batches (status);
+
 CREATE TABLE intelligence_files (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
+    remote_id TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    name TEXT NOT NULL,
+    size INTEGER NOT NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
 
 CREATE INDEX intelligence_files_account_id ON intelligence_files (account_id);
+CREATE INDEX intelligence_files_remote_id ON intelligence_files (remote_id);
 
 CREATE TABLE intelligence_vector_files (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
